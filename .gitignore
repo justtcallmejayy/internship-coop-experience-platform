@@ -34,3 +34,4 @@ out/
 *.db
 dev.sqlite3
 server/dev.sqlite3
+server/test.sqlite3
