@@ -1,23 +1,25 @@
 {
   "jest": {
-  "testEnvironment": "node"
-},
+    "testEnvironment": "node"
+  },
   "name": "server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-"scripts": {
-  "dev": "nodemon src/index.js",
-  "start": "node src/index.js",
-  "test": "jest"
-},
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "test": "jest"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "knex": "^3.2.10",
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
     "jest": "^30.4.2",
