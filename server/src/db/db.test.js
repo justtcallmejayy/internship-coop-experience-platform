@@ -24,10 +24,12 @@ describe("Database setup", () => {
 
     const tables = await knex("sqlite_master")
       .select("name")
-      .where({ type: "table" })
-      .whereNotLike("name", "sqlite_%");
+      .where({ type: "table" });
 
-    const tableNames = tables.map((table) => table.name).sort();
+    const tableNames = tables
+      .map((table) => table.name)
+      .filter((name) => !name.startsWith("sqlite_"))
+      .sort();
 
     expect(tableNames).toEqual(
       [
