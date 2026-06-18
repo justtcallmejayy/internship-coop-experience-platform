@@ -1,3 +1,25 @@
+/* About the table content: this will create the experience entries table.
+- entry_id: auto-incrementing primary key for each experience entry.
+- author_id: the ID of the user who created the experience entry.
+- industry_id: the ID of the industry this experience entry belongs to.
+- reviewed_by_id: the ID of the user who reviewed the experience entry.
+- company_name: the name of the company where the experience was gained.
+- role_title: the title of the role held at the company.
+- work_term_type: the type of work term (e.g., full-time, part-time, internship).
+- work_mode: the mode of work (e.g., on-site, remote).
+- location_city: the city where the experience was gained.
+- location_province: the province where the experience was gained.
+- start_month: the month when the experience started.
+- start_year: the year when the experience started.
+- end_month: the month when the experience ended.
+- end_year: the year when the experience ended.
+- interview_format: the format of the interview (e.g., in-person, video).
+- learning_outcomes: a description of what was learned during the experience.
+- moderation_status: a flag indicating whether a user has submitted their entry for moderation and its current status (Draft, Submitted, Approved, Rejected).
+- submission_date: a timestamp indicating when a user submitted their entry for moderation.
+- last_updated_date: a timestamp indicating when an entry was last updated.
+- review_date: a timestamp indicating when an entry was reviewed by a moderator.
+*/
 exports.up = async (knex) => {
   await knex.schema.createTable("experience_entries", (t) => {
     t.increments("entry_id").primary();

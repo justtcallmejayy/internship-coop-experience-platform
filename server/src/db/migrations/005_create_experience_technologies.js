@@ -1,3 +1,10 @@
+
+/* About content: this will create the experience table.
+- exp_tech_id: auto-incrementing p key for each experience-technology relationship.
+- entry_id: the ID of the experience entry this relationship belongs to.
+- tech_id: the ID of the technology this relationship belongs to.
+- custom_tech_name: a custom name for the technology if it's not in the technologies table.
+*/
 exports.up = async (knex) => {
   await knex.schema.createTable("experience_technologies", (t) => {
     t.increments("exp_tech_id").primary();
