@@ -30,3 +30,18 @@ function validatePassword(password) {
   };
 }
 
+async function hashPassword(password) {
+  const saltRounds = 10;
+  return bcrypt.hash(password, saltRounds);
+}
+
+async function comparePassword(password, passwordHash) {
+  return bcrypt.compare(password, passwordHash);
+}
+
+module.exports = {
+  validatePassword,
+  hashPassword,
+  comparePassword,
+  PASSWORD_RULES_MESSAGE,
+};
