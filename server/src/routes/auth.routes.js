@@ -15,3 +15,32 @@ router.post("/register", async (req, res) => {
 });
 
 // Login a user and admin then passwords matching logic with hash comparison
+router.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Fetch the user from the database
+    const user = await db("users").where({ username }).first();
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid username or password." });
+    }
+
+    // Compare the provided password with the stored hash
+    const isPasswordValid = await comparePassword(password, user.password_hash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid username or password." });
+    }
+
+    // Store user information in session
+    req.session.user = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    };
+
+    res.json({ message: "Login successful.", user: req.session.user });
+  } catch (error) {
+    console.error("Error during login:", error);    
+  }})
