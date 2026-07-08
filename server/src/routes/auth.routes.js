@@ -42,5 +42,21 @@ router.post("/login", async (req, res) => {
 
     res.json({ message: "Login successful.", user: req.session.user });
   } catch (error) {
-    console.error("Error during login:", error);    
-  }})
+    console.error("Error during login:", error);
+  }
+});
+
+// me 
+router.get("/me", (req, res) => {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({
+      error: "Authentication required.",
+    });
+  }
+// Return the user information from the session
+  return res.status(200).json({
+    user: req.session.user,
+  });
+});
+
+module.exports = router;
