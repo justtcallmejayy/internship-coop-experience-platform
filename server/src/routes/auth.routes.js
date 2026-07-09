@@ -46,6 +46,28 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Logout a user
+router.post("/logout", (req, res) => {
+  if (!req.session) {
+    return res.status(200).json({
+      message: "Logged out successfully.",
+    });
+  }
+
+  req.session.destroy((error) => {
+    if (error) {
+      console.error("Logout error:", error);
+      return res.status(500).json({
+        error: "Unable to log out.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Logged out successfully.",
+    });
+  });
+});
+
 // me 
 router.get("/me", (req, res) => {
   if (!req.session || !req.session.user) {
