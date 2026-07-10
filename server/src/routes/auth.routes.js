@@ -5,6 +5,22 @@ const {
   hashPassword,
   comparePassword,
 } = require("../services/password.service");
+describe("Auth routes", () => {
+  beforeAll(async () => {
+    await db.migrate.rollback(undefined, true);
+    await db.migrate.latest();
+  });
+
+  beforeEach(async () => {
+    await db("users").del();
+  });
+
+  afterAll(async () => {
+    await db.destroy();
+  });
+
+  //all the post and get methods for the auth routes will be tested here, including register, login, logout, and me endpoints. Each test will check for proper responses and session handling.
+});
 
 // Create a new router instance
 const router = express.Router();
@@ -68,14 +84,14 @@ router.post("/logout", (req, res) => {
   });
 });
 
-// me 
+// me
 router.get("/me", (req, res) => {
   if (!req.session || !req.session.user) {
     return res.status(401).json({
       error: "Authentication required.",
     });
   }
-// Return the user information from the session
+  // Return the user information from the session
   return res.status(200).json({
     user: req.session.user,
   });
