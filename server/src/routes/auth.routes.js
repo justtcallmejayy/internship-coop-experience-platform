@@ -32,33 +32,45 @@ router.post("/register", async (req, res) => {
 
 // Login a user and admin then passwords matching logic with hash comparison
 router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-
   try {
-    // Fetch the user from the database
-    const user = await db("users").where({ username }).first();
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        error: "Email and password are required.",
+      });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    const user = await db("users").where({ email: cleanEmail }).first();
 
     if (!user) {
-      return res.status(401).json({ error: "Invalid username or password." });
+      return res.status(401).json({
+        error: "Email or password is incorrect.",
+      });
     }
-
     // Compare the provided password with the stored hash
-    const isPasswordValid = await comparePassword(password, user.password_hash);
+    const passwordMatches = await comparePassword(password, user.password_hash);
 
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid username or password." });
+    if (!passwordMatches) {
+      return res.status(401).json({
+        error: "Email or password is incorrect.",
+      });
     }
-
     // Store user information in session
-    req.session.user = {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-    };
 
-    res.json({ message: "Login successful.", user: req.session.user });
+    req.session.user = publicUser(user);
+
+    return res.status(200).json({
+      message: "Logged in successfully.",
+      user: publicUser(user),
+    });
   } catch (error) {
-    console.error("Error during login:", error);
+    console.error("Login error:", error);
+    return res.status(500).json({
+      error: "Unable to log in.",
+    });
   }
 });
 
