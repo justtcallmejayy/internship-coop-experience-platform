@@ -24,3 +24,22 @@
 - UI
 - Playwright
 - Deployment/security/accessibility checks
+
+## Update 2.0
+
+### Added
+- `server/`
+  - `src/`
+    - `app.js`
+    - `index.js`
+    - `app.test.js`
+
+### Installed
+- `express`
+- `dotenv`
+- `nodemon`
+- `jest`
+- `supertest`
+
+### Built
+- `GET /health`
