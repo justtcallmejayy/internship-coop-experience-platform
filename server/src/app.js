@@ -24,7 +24,7 @@ app.get("/health", (req, res) => {
   res.status(200).json({ ok: true });
 });
 
-app.use("/auth", authRoutes);
+app.use("/auth", authRoutes); //connects auth routes to the app.
 
 app.use((req, res) => {
   res.status(404).json({

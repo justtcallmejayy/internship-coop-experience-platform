@@ -38,3 +38,34 @@ describe("Auth routes", () => {
     expect(res.body.error).toBe("Authentication required.");
   });
 });
+
+// creates a student user
+test("POST /auth/register creates a student user", async () => {
+  const res = await request(app).post("/auth/register").send({
+    full_name: "Student One",
+    email: "student1@test.com",
+    password: "P@ssw0rd123",
+  });
+
+  expect(res.statusCode).toBe(201);
+  expect(res.body.user.email).toBe("student1@test.com");
+  expect(res.body.user.role).toBe("Student");
+  expect(res.body.user.password_hash).toBeUndefined();
+
+  const userInDb = await db("users")
+    .where({ email: "student1@test.com" })
+    .first();
+
+  expect(userInDb).toBeTruthy();
+  expect(userInDb.password_hash).not.toBe("P@ssw0rd123");
+});
+
+//rejects weak password
+
+//rejects duplicate email registration
+
+//login with correct credentials
+
+//login with incorrect credentials
+
+//logout user
