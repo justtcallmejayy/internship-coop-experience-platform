@@ -6,6 +6,21 @@ Both the tests for the database and app passed
 
 <!--
 
+the below error was fixed 
+
+ PASS  src/db/db.test.js
+ PASS  src/routes/auth.routes.test.js
+ PASS  src/services/password.service.test.js
+ PASS  src/app.test.js
+
+Test Suites: 4 passed, 4 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        0.646 s, estimated 1 s
+Ran all test suites.
+
+
+
 > server@1.0.0 test
 > jest --runInBand
 
