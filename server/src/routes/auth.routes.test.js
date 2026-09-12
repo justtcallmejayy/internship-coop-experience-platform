@@ -26,10 +26,19 @@ describe("Auth routes", () => {
     await db.migrate.rollback(undefined, true);
     await db.migrate.latest();
   });
-
-  afterAll(async () => {
-    await db.destroy();
+  //Because child tables must be cleared before parent tables because of foreign keys.
+  //This is necessary to avoid foreign key constraint violations.
+  beforeEach(async () => {
+    await db("experience_technologies").del();
+    await db("experience_entries").del();
+    await db("technologies").del();
+    await db("industries").del();
+    await db("users").del();
   });
+
+  /*   afterAll(async () => {
+    await db.destroy();
+  }); */
 
   test("GET /auth/me rejects unauthenticated users", async () => {
     const res = await request(app).get("/auth/me");
