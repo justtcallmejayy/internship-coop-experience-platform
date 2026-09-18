@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const authRoutes = require("./routes/auth.routes");
+const profileRoutes = require("./routes/profile.routes");
 
 const app = express();
 
@@ -25,6 +26,8 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/auth", authRoutes); //connects auth routes to the app.
+
+app.use("/profile", profileRoutes); //connects profile routes to the app.
 
 app.use((req, res) => {
   res.status(404).json({
