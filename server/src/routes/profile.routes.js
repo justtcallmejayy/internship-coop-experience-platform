@@ -52,3 +52,44 @@ function validateProfileUpdate(body) {
   }
   return errors;
 }
+
+//linkedIn URL validation function
+
+/* 
+
+  if ("linkedin_url" in body) {
+    const linkedinUrl = body.linkedin_url;
+
+      if (typeof linkedinUrl === "string" && linkedinUrl.length > 255) {
+        errors.push("LinkedIn URL must be 255 characters or fewer.");
+      }
+
+  }
+
+*/
+
+//router to have custom errors for profile
+router.get("/", requireAuth, async (req, res) => {
+  try {
+    const user = await db("users")
+      .where({ user_id: req.session.user.user_id })
+      .first();
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User profile not found.",
+      });
+    }
+
+    return res.status(200).json({
+      user: publicUser(user),
+    });
+  } catch (error) {
+    console.error("Profile fetch error:", error);
+    return res.status(500).json({
+      error: "Unable to fetch profile.",
+    });
+  }
+});
+
+// functions and conditions for profile updation
