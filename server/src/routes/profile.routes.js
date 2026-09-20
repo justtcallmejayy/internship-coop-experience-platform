@@ -57,14 +57,24 @@ function validateProfileUpdate(body) {
 
 /* 
 
-  if ("linkedin_url" in body) {
+ if ("linkedin_url" in body) {
     const linkedinUrl = body.linkedin_url;
+
+    if (linkedinUrl !== null && linkedinUrl !== "") {
+      if (typeof linkedinUrl !== "string") {
+        errors.push("LinkedIn URL must be text.");
+      } else if (!linkedinUrl.startsWith("https://www.linkedin.com/") && !linkedinUrl.startsWith("https://linkedin.com/")) {
+        errors.push("LinkedIn URL must be a valid LinkedIn URL.");
+      }
 
       if (typeof linkedinUrl === "string" && linkedinUrl.length > 255) {
         errors.push("LinkedIn URL must be 255 characters or fewer.");
       }
-
+    }
   }
+
+  return errors;
+}
 
 */
 
@@ -93,3 +103,45 @@ router.get("/", requireAuth, async (req, res) => {
 });
 
 // functions and conditions for profile updation
+router.patch("/", requireAuth, async (req, res) => {
+  try {
+    const blockedFields = [
+      "email",
+      "password",
+      "password_hash",
+      "role",
+      "user_id",
+      "created_at",
+    ];
+
+    const attemptedBlockedFields = blockedFields.filter(
+      (field) => field in req.body,
+    );
+
+    if (attemptedBlockedFields.length > 0) {
+      return res.status(400).json({
+        error: `These fields cannot be updated from profile: ${attemptedBlockedFields.join(", ")}.`,
+      });
+    }
+
+    const errors = validateProfileUpdate(req.body);
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        error: "Profile validation failed.",
+        details: errors,
+      });
+    }
+
+    /* 
+    fullname, program, graduation_year, linkedin_url are the fields that can be updated in the profile. The code checks if these fields are present in the request body and updates them accordingly. If a field is not present, it retains its current value from the database.
+    */
+
+    //      message: "Profile updated successfully.",
+  } catch (error) {
+    console.error("Profile update error:", error);
+    return res.status(500).json({
+      error: "Unable to update profile.",
+    });
+  }
+});
