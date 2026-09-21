@@ -142,8 +142,40 @@ describe("Profile routes", () => {
   });
 
   //profile rejects invlaid graduation year update
+  test("PATCH /profile rejects invalid graduation year", async () => {
+    await createStudentUser();
 
+    const agent = request.agent(app);
+    await loginAsStudent(agent);
+
+    const res = await agent.patch("/profile").send({
+      graduation_year: 1800,
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe("Profile validation failed.");
+    expect(res.body.details).toContain(
+      "Graduation year must be a valid year between 2020 and 2100.",
+    );
+  });
   //profile rejects invalid linkedin url update
+
+  test("PATCH /profile rejects invalid LinkedIn URL", async () => {
+    await createStudentUser();
+
+    const agent = request.agent(app);
+    await loginAsStudent(agent);
+
+    const res = await agent.patch("/profile").send({
+      linkedin_url: "https://example.com/studentone",
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe("Profile validation failed.");
+    expect(res.body.details).toContain(
+      "LinkedIn URL must be a valid LinkedIn URL.",
+    );
+  });
 
   //profile rejects invalid profile feilds update
 
