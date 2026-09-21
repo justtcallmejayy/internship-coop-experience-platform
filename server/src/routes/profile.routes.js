@@ -137,6 +137,49 @@ router.patch("/", requireAuth, async (req, res) => {
     fullname, program, graduation_year, linkedin_url are the fields that can be updated in the profile. The code checks if these fields are present in the request body and updates them accordingly. If a field is not present, it retains its current value from the database.
     */
 
+    const allowedUpdates = {};
+
+    if ("full_name" in req.body) {
+      allowedUpdates.full_name = req.body.full_name.trim();
+    }
+
+    if ("program" in req.body) {
+      allowedUpdates.program =
+        req.body.program === null ? null : req.body.program.trim();
+    }
+
+    if ("graduation_year" in req.body) {
+      allowedUpdates.graduation_year = req.body.graduation_year ?? null;
+    }
+
+    if ("linkedin_url" in req.body) {
+      allowedUpdates.linkedin_url =
+        req.body.linkedin_url === null || req.body.linkedin_url === ""
+          ? null
+          : req.body.linkedin_url.trim();
+    }
+
+    if (Object.keys(allowedUpdates).length === 0) {
+      return res.status(400).json({
+        error: "No valid profile fields were provided.",
+      });
+    }
+
+    /*     await db("users")
+      .where({ user_id: req.session.user.user_id })
+      .update(allowedUpdates);
+
+    const updatedUser = await db("users")
+      .where({ user_id: req.session.user.user_id })
+      .first();
+
+    req.session.user = publicUser(updatedUser);
+
+    return res.status(200).json({
+      message: "Profile updated successfully.",
+      user: publicUser(updatedUser)
+    }); */
+
     //      message: "Profile updated successfully.",
   } catch (error) {
     console.error("Profile update error:", error);
