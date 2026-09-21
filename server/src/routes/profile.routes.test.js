@@ -7,7 +7,7 @@ const db = require("../db/knex");
 const { hashPassword } = require("../services/password.service");
 
 async function createStudentUser() {
-  const password_hash = await hashPassword("P@ssw0rd1");
+  const password_hash = await hashPassword("P@ssw0rd123");
 
   const insertedIds = await db("users").insert({
     full_name: "Student One",
@@ -50,13 +50,96 @@ describe("Profile routes", () => {
     expect(res.statusCode).toBe(401);
     expect(res.body.error).toBe("Authentication required.");
   });
-  // profile routes test for authenticated users returning user profile data loggedin as a student
+  // profile routes test for authenticated users returning user profile data loggedin as a student rejected unauthenticated users and returns logged-in user profile data for authenticated users.
+  test("GET /profile rejects unauthenticated users", async () => {
+    const res = await request(app).get("/profile");
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBe("Authentication required.");
+  });
+
+  test("GET /profile returns logged-in user profile", async () => {
+    await createStudentUser();
+
+    const agent = request.agent(app);
+    await loginAsStudent(agent);
+
+    const res = await agent.get("/profile");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.user.email).toBe("student1@test.com");
+    expect(res.body.user.full_name).toBe("Student One");
+    expect(res.body.user.program).toBe("CST - Software Development");
+    expect(res.body.user.graduation_year).toBe(2026);
+    expect(res.body.user.linkedin_url).toBe(
+      "https://www.linkedin.com/in/studentone",
+    );
+    expect(res.body.user.password_hash).toBeUndefined();
+  });
 
   //profile routes test for updated profile data logged in as a student
 
+  test("PATCH /profile updates allowed profile fields", async () => {
+    await createStudentUser();
+
+    const agent = request.agent(app);
+    await loginAsStudent(agent);
+
+    const res = await agent.patch("/profile").send({
+      full_name: "Updated Student",
+      program: "Computer Systems Technology - Software Development",
+      graduation_year: 2027,
+      linkedin_url: "https://www.linkedin.com/in/updatedstudent",
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Profile updated successfully.");
+    expect(res.body.user.full_name).toBe("Updated Student");
+    expect(res.body.user.program).toBe(
+      "Computer Systems Technology - Software Development",
+    );
+    expect(res.body.user.graduation_year).toBe(2027);
+    expect(res.body.user.linkedin_url).toBe(
+      "https://www.linkedin.com/in/updatedstudent",
+    );
+
+    const userInDb = await db("users")
+      .where({ email: "student1@test.com" })
+      .first();
+
+    expect(userInDb.full_name).toBe("Updated Student");
+  });
+
   //profile rejects email update.
 
+  test("PATCH /profile rejects email update", async () => {
+    await createStudentUser();
+
+    const agent = request.agent(app);
+    await loginAsStudent(agent);
+
+    const res = await agent.patch("/profile").send({
+      email: "newemail@test.com",
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toContain("email");
+  });
   //profile rejects role update
+
+  test("PATCH /profile rejects role update", async () => {
+    await createStudentUser();
+
+    const agent = request.agent(app);
+    await loginAsStudent(agent);
+
+    const res = await agent.patch("/profile").send({
+      role: "Admin",
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toContain("role");
+  });
 
   //profile rejects invlaid graduation year update
 

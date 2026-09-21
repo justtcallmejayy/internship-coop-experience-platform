@@ -55,28 +55,26 @@ function validateProfileUpdate(body) {
 
 //linkedIn URL validation function
 
-/* 
+if ("linkedin_url" in body) {
+  const linkedinUrl = body.linkedin_url;
 
- if ("linkedin_url" in body) {
-    const linkedinUrl = body.linkedin_url;
+  if (linkedinUrl !== null && linkedinUrl !== "") {
+    if (typeof linkedinUrl !== "string") {
+      errors.push("LinkedIn URL must be text.");
+    } else if (
+      !linkedinUrl.startsWith("https://www.linkedin.com/") &&
+      !linkedinUrl.startsWith("https://linkedin.com/")
+    ) {
+      errors.push("LinkedIn URL must be a valid LinkedIn URL.");
+    }
 
-    if (linkedinUrl !== null && linkedinUrl !== "") {
-      if (typeof linkedinUrl !== "string") {
-        errors.push("LinkedIn URL must be text.");
-      } else if (!linkedinUrl.startsWith("https://www.linkedin.com/") && !linkedinUrl.startsWith("https://linkedin.com/")) {
-        errors.push("LinkedIn URL must be a valid LinkedIn URL.");
-      }
-
-      if (typeof linkedinUrl === "string" && linkedinUrl.length > 255) {
-        errors.push("LinkedIn URL must be 255 characters or fewer.");
-      }
+    if (typeof linkedinUrl === "string" && linkedinUrl.length > 255) {
+      errors.push("LinkedIn URL must be 255 characters or fewer.");
     }
   }
-
-  return errors;
 }
 
-*/
+return errors;
 
 //router to have custom errors for profile
 router.get("/", requireAuth, async (req, res) => {
@@ -165,7 +163,7 @@ router.patch("/", requireAuth, async (req, res) => {
       });
     }
 
-    /*     await db("users")
+    await db("users")
       .where({ user_id: req.session.user.user_id })
       .update(allowedUpdates);
 
@@ -177,8 +175,8 @@ router.patch("/", requireAuth, async (req, res) => {
 
     return res.status(200).json({
       message: "Profile updated successfully.",
-      user: publicUser(updatedUser)
-    }); */
+      user: publicUser(updatedUser),
+    });
 
     //      message: "Profile updated successfully.",
   } catch (error) {
