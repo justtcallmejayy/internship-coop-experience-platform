@@ -178,6 +178,16 @@ describe("Profile routes", () => {
   });
 
   //profile rejects invalid profile feilds update
+  test("PATCH /profile rejects request with no valid profile fields", async () => {
+    await createStudentUser();
 
+    const agent = request.agent(app);
+    await loginAsStudent(agent);
+
+    const res = await agent.patch("/profile").send({});
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe("No valid profile fields were provided.");
+  });
   //
 });
