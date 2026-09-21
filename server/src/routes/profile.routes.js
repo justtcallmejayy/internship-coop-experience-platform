@@ -16,6 +16,7 @@ function publicUser(user) {
     created_at: user.created_at,
   };
 }
+
 function validateProfileUpdate(body) {
   const errors = [];
 
@@ -28,6 +29,7 @@ function validateProfileUpdate(body) {
       errors.push("Full name must be at least 2 characters.");
     }
   }
+
   // checking program and graduation year for null values and type checking. If they are not null, they must be of the correct type and within the specified constraints.
   if ("program" in body) {
     if (body.program !== null && typeof body.program !== "string") {
@@ -50,31 +52,29 @@ function validateProfileUpdate(body) {
       }
     }
   }
-  return errors;
-}
 
-//linkedIn URL validation function
+  // linkedIn URL validation function
+  if ("linkedin_url" in body) {
+    const linkedinUrl = body.linkedin_url;
 
-if ("linkedin_url" in body) {
-  const linkedinUrl = body.linkedin_url;
+    if (linkedinUrl !== null && linkedinUrl !== "") {
+      if (typeof linkedinUrl !== "string") {
+        errors.push("LinkedIn URL must be text.");
+      } else if (
+        !linkedinUrl.startsWith("https://www.linkedin.com/") &&
+        !linkedinUrl.startsWith("https://linkedin.com/")
+      ) {
+        errors.push("LinkedIn URL must be a valid LinkedIn URL.");
+      }
 
-  if (linkedinUrl !== null && linkedinUrl !== "") {
-    if (typeof linkedinUrl !== "string") {
-      errors.push("LinkedIn URL must be text.");
-    } else if (
-      !linkedinUrl.startsWith("https://www.linkedin.com/") &&
-      !linkedinUrl.startsWith("https://linkedin.com/")
-    ) {
-      errors.push("LinkedIn URL must be a valid LinkedIn URL.");
-    }
-
-    if (typeof linkedinUrl === "string" && linkedinUrl.length > 255) {
-      errors.push("LinkedIn URL must be 255 characters or fewer.");
+      if (typeof linkedinUrl === "string" && linkedinUrl.length > 255) {
+        errors.push("LinkedIn URL must be 255 characters or fewer.");
+      }
     }
   }
-}
 
-return errors;
+  return errors;
+}
 
 //router to have custom errors for profile
 router.get("/", requireAuth, async (req, res) => {
@@ -131,7 +131,7 @@ router.patch("/", requireAuth, async (req, res) => {
       });
     }
 
-    /* 
+    /*
     fullname, program, graduation_year, linkedin_url are the fields that can be updated in the profile. The code checks if these fields are present in the request body and updates them accordingly. If a field is not present, it retains its current value from the database.
     */
 
@@ -178,7 +178,7 @@ router.patch("/", requireAuth, async (req, res) => {
       user: publicUser(updatedUser),
     });
 
-    //      message: "Profile updated successfully.",
+    // message: "Profile updated successfully.",
   } catch (error) {
     console.error("Profile update error:", error);
     return res.status(500).json({
@@ -186,3 +186,5 @@ router.patch("/", requireAuth, async (req, res) => {
     });
   }
 });
+
+module.exports = router;
