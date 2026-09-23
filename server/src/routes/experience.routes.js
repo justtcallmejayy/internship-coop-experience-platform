@@ -204,3 +204,80 @@ function validateExperiencePayload(body, options = { partial: false }) {
     custom_tech_name,
   };
 }
+// Helper function to insert reference data for testing
+async function getEntryWithTechnologies(entryId) {
+  const entry = await db("experience_entries as e")
+    .join("industries as i", "e.industry_id", "i.industry_id")
+    .leftJoin("users as reviewer", "e.reviewed_by_id", "reviewer.user_id")
+    .select(
+      "e.entry_id",
+      "e.author_id",
+      "e.industry_id",
+      "i.industry_name",
+      "e.reviewed_by_id",
+      "reviewer.full_name as reviewed_by_name",
+      "e.company_name",
+      "e.role_title",
+      "e.work_term_type",
+      "e.work_mode",
+      "e.location_city",
+      "e.location_province",
+      "e.start_month",
+      "e.start_year",
+      "e.end_month",
+      "e.end_year",
+      "e.interview_format",
+      "e.learning_outcomes",
+      "e.moderation_status",
+      "e.submission_date",
+      "e.last_updated_date",
+      "e.review_date",
+    )
+    .where("e.entry_id", entryId)
+    .first();
+
+  if (!entry) return null;
+
+  const technologies = await db("experience_technologies as et")
+    .join("technologies as t", "et.tech_id", "t.tech_id")
+    .select(
+      "et.exp_tech_id",
+      "et.tech_id",
+      "t.tech_name",
+      "et.custom_tech_name",
+    )
+    .where("et.entry_id", entryId)
+    .orderBy("t.tech_name", "asc");
+
+  return {
+    ...entry,
+    technologies,
+  };
+}
+/* Helper function to validate reference data */
+async function validateReferenceData(industryId, technologyIds) {
+  const errors = [];
+
+  if (industryId !== undefined) {
+    const industry = await db("industries")
+      .where({ industry_id: industryId })
+      .first();
+
+    if (!industry) {
+      errors.push("Selected industry does not exist.");
+    }
+  }
+
+  if (technologyIds !== undefined) {
+    const technologies = await db("technologies").whereIn(
+      "tech_id",
+      technologyIds,
+    );
+
+    if (technologies.length !== technologyIds.length) {
+      errors.push("One or more selected technologies do not exist.");
+    }
+  }
+
+  return errors;
+}
