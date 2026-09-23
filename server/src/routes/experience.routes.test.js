@@ -282,98 +282,101 @@ describe("Experience routes", () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toBe("Entries under review cannot be edited.");
   });
-});
-test("DELETE /experiences/:id prevents deleting another user's entry", async () => {
-  await createUser({
-    full_name: "Student One",
-    email: "student1@test.com",
+
+  test("DELETE /experiences/:id prevents deleting another user's entry", async () => {
+    await createUser({
+      full_name: "Student One",
+      email: "student1@test.com",
+    });
+
+    await createUser({
+      full_name: "Student Two",
+      email: "student2@test.com",
+    });
+
+    const agentOne = request.agent(app);
+    await login(agentOne, "student1@test.com");
+
+    const createRes = await agentOne
+      .post("/experiences")
+      .send(validExperiencePayload(refs));
+
+    const entryId = createRes.body.entry.entry_id;
+
+    const agentTwo = request.agent(app);
+    await login(agentTwo, "student2@test.com");
+
+    const res = await agentTwo.delete(`/experiences/${entryId}`);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.error).toBe("Experience entry not found.");
   });
 
-  await createUser({
-    full_name: "Student Two",
-    email: "student2@test.com",
+  test("DELETE /experiences/:id deletes an owned entry", async () => {
+    await createUser({});
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const createRes = await agent
+      .post("/experiences")
+      .send(validExperiencePayload(refs));
+
+    const entryId = createRes.body.entry.entry_id;
+
+    const deleteRes = await agent.delete(`/experiences/${entryId}`);
+
+    expect(deleteRes.statusCode).toBe(200);
+    expect(deleteRes.body.message).toBe(
+      "Experience entry deleted successfully.",
+    );
+
+    const entryInDb = await db("experience_entries")
+      .where({ entry_id: entryId })
+      .first();
+
+    expect(entryInDb).toBeUndefined();
   });
 
-  const agentOne = request.agent(app);
-  await login(agentOne, "student1@test.com");
+  test("POST /experiences/:id/submit changes status to Pending", async () => {
+    await createUser({});
 
-  const createRes = await agentOne
-    .post("/experiences")
-    .send(validExperiencePayload(refs));
+    const agent = request.agent(app);
+    await login(agent);
 
-  const entryId = createRes.body.entry.entry_id;
+    const createRes = await agent
+      .post("/experiences")
+      .send(validExperiencePayload(refs));
 
-  const agentTwo = request.agent(app);
-  await login(agentTwo, "student2@test.com");
+    const entryId = createRes.body.entry.entry_id;
 
-  const res = await agentTwo.delete(`/experiences/${entryId}`);
+    const res = await agent.post(`/experiences/${entryId}/submit`);
 
-  expect(res.statusCode).toBe(404);
-  expect(res.body.error).toBe("Experience entry not found.");
-});
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Experience entry submitted for review.");
+    expect(res.body.entry.moderation_status).toBe("Pending");
+    expect(res.body.entry.submission_date).toBeTruthy();
+  });
 
-test("DELETE /experiences/:id deletes an owned entry", async () => {
-  await createUser({});
+  test("POST /experiences/:id/submit rejects duplicate submission", async () => {
+    await createUser({});
 
-  const agent = request.agent(app);
-  await login(agent);
+    const agent = request.agent(app);
+    await login(agent);
 
-  const createRes = await agent
-    .post("/experiences")
-    .send(validExperiencePayload(refs));
+    const createRes = await agent
+      .post("/experiences")
+      .send(validExperiencePayload(refs));
 
-  const entryId = createRes.body.entry.entry_id;
+    const entryId = createRes.body.entry.entry_id;
 
-  const deleteRes = await agent.delete(`/experiences/${entryId}`);
+    await agent.post(`/experiences/${entryId}/submit`);
 
-  expect(deleteRes.statusCode).toBe(200);
-  expect(deleteRes.body.message).toBe("Experience entry deleted successfully.");
+    const res = await agent.post(`/experiences/${entryId}/submit`);
 
-  const entryInDb = await db("experience_entries")
-    .where({ entry_id: entryId })
-    .first();
-
-  expect(entryInDb).toBeUndefined();
-});
-
-test("POST /experiences/:id/submit changes status to Pending", async () => {
-  await createUser({});
-
-  const agent = request.agent(app);
-  await login(agent);
-
-  const createRes = await agent
-    .post("/experiences")
-    .send(validExperiencePayload(refs));
-
-  const entryId = createRes.body.entry.entry_id;
-
-  const res = await agent.post(`/experiences/${entryId}/submit`);
-
-  expect(res.statusCode).toBe(200);
-  expect(res.body.message).toBe("Experience entry submitted for review.");
-  expect(res.body.entry.moderation_status).toBe("Pending");
-  expect(res.body.entry.submission_date).toBeTruthy();
-});
-
-test("POST /experiences/:id/submit rejects duplicate submission", async () => {
-  await createUser({});
-
-  const agent = request.agent(app);
-  await login(agent);
-
-  const createRes = await agent
-    .post("/experiences")
-    .send(validExperiencePayload(refs));
-
-  const entryId = createRes.body.entry.entry_id;
-
-  await agent.post(`/experiences/${entryId}/submit`);
-
-  const res = await agent.post(`/experiences/${entryId}/submit`);
-
-  expect(res.statusCode).toBe(400);
-  expect(res.body.error).toBe(
-    "Experience entry has already been submitted for review.",
-  );
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe(
+      "Experience entry has already been submitted for review.",
+    );
+  });
 });
