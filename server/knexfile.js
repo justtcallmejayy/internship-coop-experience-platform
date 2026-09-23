@@ -9,6 +9,7 @@ module.exports = {
     connection: { filename: "./dev.sqlite3" },
     useNullAsDefault: true,
     migrations: { directory: "./src/db/migrations" },
+    seeds: { directory: "./src/db/seeds" },
   },
 
   staging: {
@@ -47,5 +48,6 @@ module.exports = {
     connection: { filename: "./test.sqlite3" },
     useNullAsDefault: true,
     migrations: { directory: "./src/db/migrations" },
-  }
+    seeds: { directory: "./src/db/seeds" },
+  },
 };

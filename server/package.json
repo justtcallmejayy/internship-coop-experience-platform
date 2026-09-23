@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "test": "NODE_ENV=test jest --runInBand"
+    "test": "NODE_ENV=test jest --runInBand", 
+    "seed": "knex seed:run"
   },
   "keywords": [],
   "author": "",
