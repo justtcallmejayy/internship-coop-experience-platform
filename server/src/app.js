@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const authRoutes = require("./routes/auth.routes");
+const profileRoutes = require("./routes/profile.routes");
 const experienceRoutes = require("./routes/experience.routes");
 
 const app = express();
