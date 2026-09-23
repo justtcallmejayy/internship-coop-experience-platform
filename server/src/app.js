@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const authRoutes = require("./routes/auth.routes");
+const experienceRoutes = require("./routes/experience.routes");
 
 const app = express();
 
@@ -24,7 +25,9 @@ app.get("/health", (req, res) => {
   res.status(200).json({ ok: true });
 });
 
-app.use("/auth", authRoutes); //connects auth routes to the app.
+app.use("/auth", authRoutes); // Mount the auth routes at /auth
+app.use("/profile", profileRoutes); // Mount the profile routes at /profile
+app.use("/experiences", experienceRoutes); // Mount the experience routes at /experiences
 
 app.use((req, res) => {
   res.status(404).json({
