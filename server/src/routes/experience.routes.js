@@ -132,5 +132,75 @@ function validateExperiencePayload(body, options = { partial: false }) {
       data.end_year = body.end_year;
     }
   }
-  return { errors, data };
+  /* Validate the date range for existing experiences */
+  const startMonth = data.start_month ?? body.start_month;
+  const startYear = data.start_year ?? body.start_year;
+  const endMonth = data.end_month ?? body.end_month;
+  const endYear = data.end_year ?? body.end_year;
+
+  if (
+    isValidMonth(startMonth) &&
+    isValidYear(startYear) &&
+    isValidMonth(endMonth) &&
+    isValidYear(endYear)
+  ) {
+    const startNumber = startYear * 100 + startMonth;
+    const endNumber = endYear * 100 + endMonth;
+
+    if (endNumber < startNumber) {
+      errors.push("End date cannot be before start date.");
+    }
+  }
+
+  if (!partial || "learning_outcomes" in body) {
+    if (!isNonEmptyString(body.learning_outcomes)) {
+      errors.push("Learning outcomes are required.");
+    } else {
+      const value = body.learning_outcomes.trim();
+
+      if (value.length > 500) {
+        errors.push("Learning outcomes must be 500 characters or fewer.");
+      } else {
+        data.learning_outcomes = value;
+      }
+    }
+  }
+
+  let technology_ids;
+
+  if (!partial || "technology_ids" in body) {
+    if (
+      !Array.isArray(body.technology_ids) ||
+      body.technology_ids.length === 0
+    ) {
+      errors.push("At least one technology must be selected.");
+    } else if (!body.technology_ids.every(Number.isInteger)) {
+      errors.push("Technology IDs must be integers.");
+    } else {
+      const uniqueTechnologyIds = [...new Set(body.technology_ids)];
+      technology_ids = uniqueTechnologyIds;
+    }
+  }
+
+  let custom_tech_name;
+
+  if ("custom_tech_name" in body) {
+    if (body.custom_tech_name === null || body.custom_tech_name === "") {
+      custom_tech_name = null;
+    } else if (typeof body.custom_tech_name !== "string") {
+      errors.push("Custom technology name must be text.");
+    } else if (body.custom_tech_name.trim().length > 50) {
+      errors.push("Custom technology name must be 50 characters or fewer.");
+    } else {
+      custom_tech_name = body.custom_tech_name.trim();
+    }
+  }
+
+  // Return the validation results
+  return {
+    errors,
+    data,
+    technology_ids,
+    custom_tech_name,
+  };
 }
