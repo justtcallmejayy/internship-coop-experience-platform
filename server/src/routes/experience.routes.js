@@ -281,3 +281,314 @@ async function validateReferenceData(industryId, technologyIds) {
 
   return errors;
 }
+async function findOwnedEntry(entryId, userId) {
+  return db("experience_entries")
+    .where({
+      entry_id: entryId,
+      author_id: userId,
+    })
+    .first();
+}
+
+/* Get a specific experience entry by ID */
+router.post("/", requireAuth, async (req, res) => {
+  try {
+    const { errors, data, technology_ids, custom_tech_name } =
+      validateExperiencePayload(req.body, { partial: false });
+
+    const referenceErrors = await validateReferenceData(
+      data.industry_id,
+      technology_ids,
+    );
+
+    const allErrors = [...errors, ...referenceErrors];
+
+    if (allErrors.length > 0) {
+      return res.status(400).json({
+        error: "Experience validation failed.",
+        details: allErrors,
+      });
+    }
+    /* Create a new experience entry */
+    const entryId = await db.transaction(async (trx) => {
+      const insertedIds = await trx("experience_entries").insert({
+        ...data,
+        author_id: req.session.user.user_id,
+        moderation_status: "Draft",
+        last_updated_date: new Date().toISOString(),
+      });
+
+      const newEntryId = insertedIds[0];
+
+      const technologyRows = technology_ids.map((tech_id) => ({
+        entry_id: newEntryId,
+        tech_id,
+        custom_tech_name: custom_tech_name || null,
+      }));
+
+      await trx("experience_technologies").insert(technologyRows);
+
+      return newEntryId;
+    });
+
+    const entry = await getEntryWithTechnologies(entryId);
+
+    return res.status(201).json({
+      message: "Experience entry created successfully.",
+      entry,
+    });
+  } catch (error) {
+    console.error("Create experience error:", error);
+    return res.status(500).json({
+      error: "Unable to create experience entry.",
+    });
+  }
+});
+/* Get a user's own experience entries */
+router.get("/my", requireAuth, async (req, res) => {
+  try {
+    const entries = await db("experience_entries")
+      .where({ author_id: req.session.user.user_id })
+      .orderBy("last_updated_date", "desc");
+
+    const entriesWithTechnologies = [];
+
+    for (const entry of entries) {
+      entriesWithTechnologies.push(
+        await getEntryWithTechnologies(entry.entry_id),
+      );
+    }
+
+    return res.status(200).json({
+      entries: entriesWithTechnologies,
+    });
+  } catch (error) {
+    console.error("Fetch my experiences error:", error);
+    return res.status(500).json({
+      error: "Unable to fetch experience entries.",
+    });
+  }
+});
+/* Get a specific experience entry by ID */
+router.get("/:id", requireAuth, async (req, res) => {
+  try {
+    const entryId = Number(req.params.id);
+
+    if (!Number.isInteger(entryId)) {
+      return res.status(400).json({
+        error: "Experience entry ID must be an integer.",
+      });
+    }
+
+    const ownedEntry = await findOwnedEntry(entryId, req.session.user.user_id);
+
+    if (!ownedEntry) {
+      return res.status(404).json({
+        error: "Experience entry not found.",
+      });
+    }
+
+    const entry = await getEntryWithTechnologies(entryId);
+
+    return res.status(200).json({
+      entry,
+    });
+  } catch (error) {
+    console.error("Fetch experience error:", error);
+    return res.status(500).json({
+      error: "Unable to fetch experience entry.",
+    });
+  }
+});
+/* Update a specific experience entry by ID */
+router.patch("/:id", requireAuth, async (req, res) => {
+  try {
+    const entryId = Number(req.params.id);
+
+    if (!Number.isInteger(entryId)) {
+      return res.status(400).json({
+        error: "Experience entry ID must be an integer.",
+      });
+    }
+
+    const ownedEntry = await findOwnedEntry(entryId, req.session.user.user_id);
+
+    if (!ownedEntry) {
+      return res.status(404).json({
+        error: "Experience entry not found.",
+      });
+    }
+
+    if (ownedEntry.moderation_status === "Pending") {
+      return res.status(400).json({
+        error: "Entries under review cannot be edited.",
+      });
+    }
+
+    const { errors, data, technology_ids, custom_tech_name } =
+      validateExperiencePayload(req.body, { partial: true });
+
+    if (
+      Object.keys(data).length === 0 &&
+      technology_ids === undefined &&
+      custom_tech_name === undefined
+    ) {
+      return res.status(400).json({
+        error: "No valid experience fields were provided.",
+      });
+    }
+
+    if (custom_tech_name !== undefined && technology_ids === undefined) {
+      return res.status(400).json({
+        error:
+          "Custom technology name can only be updated with technology IDs.",
+      });
+    }
+    /* Validate the reference data */
+    const referenceErrors = await validateReferenceData(
+      data.industry_id,
+      technology_ids,
+    );
+
+    const allErrors = [...errors, ...referenceErrors];
+
+    if (allErrors.length > 0) {
+      return res.status(400).json({
+        error: "Experience validation failed.",
+        details: allErrors,
+      });
+    }
+    /* Update the experience entry in the database */
+    await db.transaction(async (trx) => {
+      if (Object.keys(data).length > 0) {
+        await trx("experience_entries")
+          .where({ entry_id: entryId })
+          .update({
+            ...data,
+            last_updated_date: new Date().toISOString(),
+          });
+      }
+
+      if (technology_ids !== undefined) {
+        await trx("experience_technologies").where({ entry_id: entryId }).del();
+
+        const technologyRows = technology_ids.map((tech_id) => ({
+          entry_id: entryId,
+          tech_id,
+          custom_tech_name: custom_tech_name || null,
+        }));
+
+        await trx("experience_technologies").insert(technologyRows);
+      }
+    });
+
+    const entry = await getEntryWithTechnologies(entryId);
+
+    return res.status(200).json({
+      message: "Experience entry updated successfully.",
+      entry,
+    });
+  } catch (error) {
+    console.error("Update experience error:", error);
+    return res.status(500).json({
+      error: "Unable to update experience entry.",
+    });
+  }
+});
+/* Delete a specific experience entry by ID */
+router.delete("/:id", requireAuth, async (req, res) => {
+  try {
+    const entryId = Number(req.params.id);
+
+    if (!Number.isInteger(entryId)) {
+      return res.status(400).json({
+        error: "Experience entry ID must be an integer.",
+      });
+    }
+
+    const ownedEntry = await findOwnedEntry(entryId, req.session.user.user_id);
+
+    if (!ownedEntry) {
+      return res.status(404).json({
+        error: "Experience entry not found.",
+      });
+    }
+
+    await db.transaction(async (trx) => {
+      await trx("experience_technologies").where({ entry_id: entryId }).del();
+
+      await trx("experience_entries").where({ entry_id: entryId }).del();
+    });
+
+    return res.status(200).json({
+      message: "Experience entry deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Delete experience error:", error);
+    return res.status(500).json({
+      error: "Unable to delete experience entry.",
+    });
+  }
+});
+/* Submit a specific experience entry by ID for review */
+router.post("/:id/submit", requireAuth, async (req, res) => {
+  try {
+    const entryId = Number(req.params.id);
+
+    if (!Number.isInteger(entryId)) {
+      return res.status(400).json({
+        error: "Experience entry ID must be an integer.",
+      });
+    }
+
+    const ownedEntry = await findOwnedEntry(entryId, req.session.user.user_id);
+
+    if (!ownedEntry) {
+      return res.status(404).json({
+        error: "Experience entry not found.",
+      });
+    }
+
+    if (ownedEntry.moderation_status === "Pending") {
+      return res.status(400).json({
+        error: "Experience entry has already been submitted for review.",
+      });
+    }
+
+    if (ownedEntry.moderation_status === "Approved") {
+      return res.status(400).json({
+        error: "Approved entries cannot be resubmitted.",
+      });
+    }
+
+    const technologies = await db("experience_technologies").where({
+      entry_id: entryId,
+    });
+
+    if (technologies.length === 0) {
+      return res.status(400).json({
+        error: "At least one technology is required before submission.",
+      });
+    }
+    /* Update the experience entry in the database */
+    await db("experience_entries").where({ entry_id: entryId }).update({
+      moderation_status: "Pending",
+      submission_date: new Date().toISOString(),
+      last_updated_date: new Date().toISOString(),
+    });
+
+    const entry = await getEntryWithTechnologies(entryId);
+
+    return res.status(200).json({
+      message: "Experience entry submitted for review.",
+      entry,
+    });
+  } catch (error) {
+    console.error("Submit experience error:", error);
+    return res.status(500).json({
+      error: "Unable to submit experience entry.",
+    });
+  }
+});
+
+module.exports = router;
