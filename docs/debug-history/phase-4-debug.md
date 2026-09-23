@@ -24,4 +24,7 @@ Snapshots:   0 total
 Time:        1.75 s
 Ran all test suites.
 ```
+<<<<<<< HEAD
 
+=======
+>>>>>>> feature/auth
