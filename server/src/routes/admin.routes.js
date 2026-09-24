@@ -67,3 +67,54 @@ async function getAdminEntry(entryId) {
     technologies,
   };
 }
+// Admin route to fetch all pending experience entries
+router.get("/experiences/pending", requireAdmin, async (req, res) => {
+  try {
+    const pendingRows = await db("experience_entries")
+      .where({ moderation_status: "Pending" })
+      .orderBy("submission_date", "asc");
+
+    const entries = [];
+
+    for (const row of pendingRows) {
+      entries.push(await getAdminEntry(row.entry_id));
+    }
+
+    return res.status(200).json({ entries });
+  } catch (error) {
+    console.error("Admin pending queue error:", error);
+    return res.status(500).json({
+      error: "Unable to fetch pending experience entries.",
+    });
+  }
+});
+
+// Admin route to fetch a specific experience entry by ID
+router.get("/experiences/:id", requireAdmin, async (req, res) => {
+  try {
+    const entryId = parseEntryId(req.params.id);
+
+    if (!entryId) {
+      return res.status(400).json({
+        error: "Experience entry ID must be an integer.",
+      });
+    }
+
+    const entry = await getAdminEntry(entryId);
+
+    if (!entry) {
+      return res.status(404).json({
+        error: "Experience entry not found.",
+      });
+    }
+
+    return res.status(200).json({ entry });
+  } catch (error) {
+    console.error("Admin fetch experience error:", error);
+    return res.status(500).json({
+      error: "Unable to fetch experience entry.",
+    });
+  }
+});
+
+module.exports = router;
