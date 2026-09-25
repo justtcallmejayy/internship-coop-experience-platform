@@ -112,3 +112,60 @@ describe("Admin moderation routes", () => {
     await db.destroy();
   });
 });
+
+//get /admin/experiences/pending route tests
+test("GET /admin/experiences/pending rejects unauthenticated users", async () => {
+  const res = await request(app).get("/admin/experiences/pending");
+
+  expect(res.statusCode).toBe(401);
+  expect(res.body.error).toBe("Authentication required.");
+});
+
+//get /admin/experiences/:id route tests
+test("GET /admin/experiences/pending rejects student users", async () => {
+  const agent = request.agent(app);
+  await login(agent, "student1@test.com");
+
+  const res = await agent.get("/admin/experiences/pending");
+
+  expect(res.statusCode).toBe(403);
+  expect(res.body.error).toBe("Administrator access required.");
+});
+
+//get /admin/experiences/:id route tests
+test("GET /admin/experiences/pending returns pending entries for admin", async () => {
+  await createPendingExperience({
+    authorId: studentId,
+    industryId: refs.industryId,
+    techId: refs.techId,
+  });
+
+  const agent = request.agent(app);
+  await login(agent, "admin1@test.com");
+
+  const res = await agent.get("/admin/experiences/pending");
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body.entries).toHaveLength(1);
+  expect(res.body.entries[0].moderation_status).toBe("Pending");
+  expect(res.body.entries[0].author_email).toBe("student1@test.com");
+});
+
+//get /admin/experiences/:id route tests
+test("GET /admin/experiences/:id returns entry detail for admin", async () => {
+  const entryId = await createPendingExperience({
+    authorId: studentId,
+    industryId: refs.industryId,
+    techId: refs.techId,
+  });
+
+  const agent = request.agent(app);
+  await login(agent, "admin1@test.com");
+
+  const res = await agent.get(`/admin/experiences/${entryId}`);
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body.entry.entry_id).toBe(entryId);
+  expect(res.body.entry.company_name).toBe("TransUnion Canada");
+  expect(res.body.entry.technologies).toHaveLength(1);
+});
