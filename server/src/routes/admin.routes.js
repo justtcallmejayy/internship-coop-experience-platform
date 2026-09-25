@@ -117,4 +117,103 @@ router.get("/experiences/:id", requireAdmin, async (req, res) => {
   }
 });
 
+//reject experience entry
+router.patch("/experiences/:id/reject", requireAdmin, async (req, res) => {
+  try {
+    const entryId = parseEntryId(req.params.id);
+
+    if (!entryId) {
+      return res.status(400).json({
+        error: "Experience entry ID must be an integer.",
+      });
+    }
+
+    const entry = await db("experience_entries")
+      .where({ entry_id: entryId })
+      .first();
+
+    if (!entry) {
+      return res.status(404).json({
+        error: "Experience entry not found.",
+      });
+    }
+
+    if (entry.moderation_status !== "Pending") {
+      return res.status(400).json({
+        error: "Only Pending entries can be rejected.",
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await db("experience_entries").where({ entry_id: entryId }).update({
+      moderation_status: "Rejected",
+      reviewed_by_id: req.session.user.user_id,
+      review_date: now,
+      last_updated_date: now,
+    });
+
+    const updatedEntry = await getAdminEntry(entryId);
+
+    return res.status(200).json({
+      message: "Experience entry rejected.",
+      entry: updatedEntry,
+    });
+  } catch (error) {
+    console.error("Admin reject experience error:", error);
+    return res.status(500).json({
+      error: "Unable to reject experience entry.",
+    });
+  }
+});
+
+//approve experience entry
+router.patch("/experiences/:id/approve", requireAdmin, async (req, res) => {
+  try {
+    const entryId = parseEntryId(req.params.id);
+
+    if (!entryId) {
+      return res.status(400).json({
+        error: "Experience entry ID must be an integer.",
+      });
+    }
+
+    const entry = await db("experience_entries")
+      .where({ entry_id: entryId })
+      .first();
+
+    if (!entry) {
+      return res.status(404).json({
+        error: "Experience entry not found.",
+      });
+    }
+
+    if (entry.moderation_status !== "Pending") {
+      return res.status(400).json({
+        error: "Only Pending entries can be approved.",
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await db("experience_entries").where({ entry_id: entryId }).update({
+      moderation_status: "Approved",
+      reviewed_by_id: req.session.user.user_id,
+      review_date: now,
+      last_updated_date: now,
+    });
+
+    const updatedEntry = await getAdminEntry(entryId);
+
+    return res.status(200).json({
+      message: "Experience entry approved.",
+      entry: updatedEntry,
+    });
+  } catch (error) {
+    console.error("Admin approve experience error:", error);
+    return res.status(500).json({
+      error: "Unable to approve experience entry.",
+    });
+  }
+});
 module.exports = router;
