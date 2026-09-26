@@ -21,7 +21,7 @@ function requireAdmin(req, res, next) {
     });
   }
 // reminder to add admin check logic here and finish the functionfor promise like next....
-if (req.session.user.role !== "admin") {
+if (req.session.user.role !== "Admin") {
     return res.status(403).json({
       error: "Admin access required.",
     });

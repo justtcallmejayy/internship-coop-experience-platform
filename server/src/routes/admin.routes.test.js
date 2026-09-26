@@ -111,138 +111,138 @@ describe("Admin moderation routes", () => {
   afterAll(async () => {
     await db.destroy();
   });
-});
 
-//get /admin/experiences/pending route tests
-test("GET /admin/experiences/pending rejects unauthenticated users", async () => {
-  const res = await request(app).get("/admin/experiences/pending");
+  //get /admin/experiences/pending route tests
+  test("GET /admin/experiences/pending rejects unauthenticated users", async () => {
+    const res = await request(app).get("/admin/experiences/pending");
 
-  expect(res.statusCode).toBe(401);
-  expect(res.body.error).toBe("Authentication required.");
-});
-
-//get /admin/experiences/:id route tests
-test("GET /admin/experiences/pending rejects student users", async () => {
-  const agent = request.agent(app);
-  await login(agent, "student1@test.com");
-
-  const res = await agent.get("/admin/experiences/pending");
-
-  expect(res.statusCode).toBe(403);
-  expect(res.body.error).toBe("Administrator access required.");
-});
-
-//get /admin/experiences/:id route tests
-test("GET /admin/experiences/pending returns pending entries for admin", async () => {
-  await createPendingExperience({
-    authorId: studentId,
-    industryId: refs.industryId,
-    techId: refs.techId,
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBe("Authentication required.");
   });
 
-  const agent = request.agent(app);
-  await login(agent, "admin1@test.com");
+  //get /admin/experiences/:id route tests
+  test("GET /admin/experiences/pending rejects student users", async () => {
+    const agent = request.agent(app);
+    await login(agent, "student1@test.com");
 
-  const res = await agent.get("/admin/experiences/pending");
+    const res = await agent.get("/admin/experiences/pending");
 
-  expect(res.statusCode).toBe(200);
-  expect(res.body.entries).toHaveLength(1);
-  expect(res.body.entries[0].moderation_status).toBe("Pending");
-  expect(res.body.entries[0].author_email).toBe("student1@test.com");
-});
-
-//get /admin/experiences/:id route tests
-test("GET /admin/experiences/:id returns entry detail for admin", async () => {
-  const entryId = await createPendingExperience({
-    authorId: studentId,
-    industryId: refs.industryId,
-    techId: refs.techId,
+    expect(res.statusCode).toBe(403);
+    expect(res.body.error).toBe("Admin access required.");
   });
 
-  const agent = request.agent(app);
-  await login(agent, "admin1@test.com");
+  //get /admin/experiences/:id route tests
+  test("GET /admin/experiences/pending returns pending entries for admin", async () => {
+    await createPendingExperience({
+      authorId: studentId,
+      industryId: refs.industryId,
+      techId: refs.techId,
+    });
 
-  const res = await agent.get(`/admin/experiences/${entryId}`);
+    const agent = request.agent(app);
+    await login(agent, "admin1@test.com");
 
-  expect(res.statusCode).toBe(200);
-  expect(res.body.entry.entry_id).toBe(entryId);
-  expect(res.body.entry.company_name).toBe("TransUnion Canada");
-  expect(res.body.entry.technologies).toHaveLength(1);
-});
-test("PATCH /admin/experiences/:id/approve approves pending entry", async () => {
-  const entryId = await createPendingExperience({
-    authorId: studentId,
-    industryId: refs.industryId,
-    techId: refs.techId,
+    const res = await agent.get("/admin/experiences/pending");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entries).toHaveLength(1);
+    expect(res.body.entries[0].moderation_status).toBe("Pending");
+    expect(res.body.entries[0].author_email).toBe("student1@test.com");
   });
 
-  const agent = request.agent(app);
-  await login(agent, "admin1@test.com");
+  //get /admin/experiences/:id route tests
+  test("GET /admin/experiences/:id returns entry detail for admin", async () => {
+    const entryId = await createPendingExperience({
+      authorId: studentId,
+      industryId: refs.industryId,
+      techId: refs.techId,
+    });
 
-  const res = await agent.patch(`/admin/experiences/${entryId}/approve`);
+    const agent = request.agent(app);
+    await login(agent, "admin1@test.com");
 
-  expect(res.statusCode).toBe(200);
-  expect(res.body.message).toBe("Experience entry approved.");
-  expect(res.body.entry.moderation_status).toBe("Approved");
-  expect(res.body.entry.reviewed_by_id).toBe(adminId);
-  expect(res.body.entry.review_date).toBeTruthy();
-});
+    const res = await agent.get(`/admin/experiences/${entryId}`);
 
-test("PATCH /admin/experiences/:id/reject rejects pending entry", async () => {
-  const entryId = await createPendingExperience({
-    authorId: studentId,
-    industryId: refs.industryId,
-    techId: refs.techId,
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entry.entry_id).toBe(entryId);
+    expect(res.body.entry.company_name).toBe("TransUnion Canada");
+    expect(res.body.entry.technologies).toHaveLength(1);
+  });
+  test("PATCH /admin/experiences/:id/approve approves pending entry", async () => {
+    const entryId = await createPendingExperience({
+      authorId: studentId,
+      industryId: refs.industryId,
+      techId: refs.techId,
+    });
+
+    const agent = request.agent(app);
+    await login(agent, "admin1@test.com");
+
+    const res = await agent.patch(`/admin/experiences/${entryId}/approve`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Experience entry approved.");
+    expect(res.body.entry.moderation_status).toBe("Approved");
+    expect(res.body.entry.reviewed_by_id).toBe(adminId);
+    expect(res.body.entry.review_date).toBeTruthy();
   });
 
-  const agent = request.agent(app);
-  await login(agent, "admin1@test.com");
+  test("PATCH /admin/experiences/:id/reject rejects pending entry", async () => {
+    const entryId = await createPendingExperience({
+      authorId: studentId,
+      industryId: refs.industryId,
+      techId: refs.techId,
+    });
 
-  const res = await agent.patch(`/admin/experiences/${entryId}/reject`);
+    const agent = request.agent(app);
+    await login(agent, "admin1@test.com");
 
-  expect(res.statusCode).toBe(200);
-  expect(res.body.message).toBe("Experience entry rejected.");
-  expect(res.body.entry.moderation_status).toBe("Rejected");
-  expect(res.body.entry.reviewed_by_id).toBe(adminId);
-  expect(res.body.entry.review_date).toBeTruthy();
-});
+    const res = await agent.patch(`/admin/experiences/${entryId}/reject`);
 
-test("PATCH /admin/experiences/:id/approve rejects non-pending entry", async () => {
-  const entryId = await createPendingExperience({
-    authorId: studentId,
-    industryId: refs.industryId,
-    techId: refs.techId,
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Experience entry rejected.");
+    expect(res.body.entry.moderation_status).toBe("Rejected");
+    expect(res.body.entry.reviewed_by_id).toBe(adminId);
+    expect(res.body.entry.review_date).toBeTruthy();
   });
 
-  await db("experience_entries")
-    .where({ entry_id: entryId })
-    .update({ moderation_status: "Approved" });
+  test("PATCH /admin/experiences/:id/approve rejects non-pending entry", async () => {
+    const entryId = await createPendingExperience({
+      authorId: studentId,
+      industryId: refs.industryId,
+      techId: refs.techId,
+    });
 
-  const agent = request.agent(app);
-  await login(agent, "admin1@test.com");
+    await db("experience_entries")
+      .where({ entry_id: entryId })
+      .update({ moderation_status: "Approved" });
 
-  const res = await agent.patch(`/admin/experiences/${entryId}/approve`);
+    const agent = request.agent(app);
+    await login(agent, "admin1@test.com");
 
-  expect(res.statusCode).toBe(400);
-  expect(res.body.error).toBe("Only Pending entries can be approved.");
-});
+    const res = await agent.patch(`/admin/experiences/${entryId}/approve`);
 
-test("PATCH /admin/experiences/:id/reject rejects invalid id", async () => {
-  const agent = request.agent(app);
-  await login(agent, "admin1@test.com");
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe("Only Pending entries can be approved.");
+  });
 
-  const res = await agent.patch("/admin/experiences/not-a-number/reject");
+  test("PATCH /admin/experiences/:id/reject rejects invalid id", async () => {
+    const agent = request.agent(app);
+    await login(agent, "admin1@test.com");
 
-  expect(res.statusCode).toBe(400);
-  expect(res.body.error).toBe("Experience entry ID must be an integer.");
-});
+    const res = await agent.patch("/admin/experiences/not-a-number/reject");
 
-test("PATCH /admin/experiences/:id/reject returns 404 for missing entry", async () => {
-  const agent = request.agent(app);
-  await login(agent, "admin1@test.com");
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe("Experience entry ID must be an integer.");
+  });
 
-  const res = await agent.patch("/admin/experiences/999/reject");
+  test("PATCH /admin/experiences/:id/reject returns 404 for missing entry", async () => {
+    const agent = request.agent(app);
+    await login(agent, "admin1@test.com");
 
-  expect(res.statusCode).toBe(404);
-  expect(res.body.error).toBe("Experience entry not found.");
+    const res = await agent.patch("/admin/experiences/999/reject");
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.error).toBe("Experience entry not found.");
+  });
 });
