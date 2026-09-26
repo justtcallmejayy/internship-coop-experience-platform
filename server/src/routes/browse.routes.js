@@ -184,3 +184,33 @@ router.get("/experiences", requireAuth, async (req, res) => {
     });
   }
 });
+router.get("/experiences/:id", requireAuth, async (req, res) => {
+  try {
+    const entryId = Number(req.params.id);
+
+    if (!Number.isInteger(entryId)) {
+      return res.status(400).json({
+        error: "Experience entry ID must be an integer.",
+      });
+    }
+
+    const entry = await getApprovedEntryWithTechnologies(entryId);
+
+    if (!entry) {
+      return res.status(404).json({
+        error: "Approved experience entry not found.",
+      });
+    }
+
+    return res.status(200).json({
+      entry,
+    });
+  } catch (error) {
+    console.error("Browse approved experience detail error:", error);
+    return res.status(500).json({
+      error: "Unable to fetch approved experience entry.",
+    });
+  }
+});
+
+module.exports = router;
