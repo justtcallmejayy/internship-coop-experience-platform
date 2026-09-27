@@ -108,3 +108,79 @@ async function createExperience({
 
   return entryId;
 }
+
+describe("Browse approved experience routes", () => {
+  let refs;
+  let studentId;
+
+  beforeAll(async () => {
+    await db.migrate.rollback(undefined, true);
+    await db.migrate.latest();
+  });
+
+  beforeEach(async () => {
+    await db("experience_technologies").del();
+    await db("experience_entries").del();
+    await db("technologies").del();
+    await db("industries").del();
+    await db("users").del();
+
+    refs = await seedReferenceData();
+
+    studentId = await createUser({
+      full_name: "Student One",
+      email: "student1@test.com",
+      role: "Student",
+    });
+  });
+
+  afterAll(async () => {
+    await db.destroy();
+  });
+
+  test("GET /browse/experiences rejects unauthenticated users", async () => {
+    const res = await request(app).get("/browse/experiences");
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBe("Authentication required.");
+  });
+
+  test("GET /browse/experiences returns only Approved entries", async () => {
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "TransUnion Canada",
+      roleTitle: "Engineering Operations Co-op",
+      status: "Approved",
+    });
+
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.finance,
+      techId: refs.technologies.sql,
+      companyName: "Foresters Financial",
+      roleTitle: "Security Administrator Co-op",
+      status: "Pending",
+    });
+
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.healthcare,
+      techId: refs.technologies.react,
+      companyName: "West Haldimand General Hospital",
+      roleTitle: "HR Assistant Intern",
+      status: "Rejected",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get("/browse/experiences");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entries).toHaveLength(1);
+    expect(res.body.entries[0].company_name).toBe("TransUnion Canada");
+    expect(res.body.entries[0].moderation_status).toBe("Approved");
+  });
+});
