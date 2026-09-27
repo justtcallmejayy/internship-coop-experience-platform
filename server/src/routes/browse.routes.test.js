@@ -27,7 +27,7 @@ async function createUser({
 async function login(
   agent,
   email = "student1@test.com",
-  password = "P@ssw0rd1",
+  password = "P@ssw0rd123",
 ) {
   await agent.post("/auth/login").send({
     email,
@@ -239,5 +239,183 @@ describe("Browse approved experience routes", () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.entries).toHaveLength(1);
     expect(res.body.entries[0].role_title).toBe("Security Administrator Co-op");
+  });
+  test("GET /browse/experiences filters by industry_id", async () => {
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "TransUnion Canada",
+      roleTitle: "Engineering Operations Co-op",
+      status: "Approved",
+    });
+
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.finance,
+      techId: refs.technologies.react,
+      companyName: "Foresters Financial",
+      roleTitle: "Security Administrator Co-op",
+      status: "Approved",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get(
+      `/browse/experiences?industry_id=${refs.industries.finance}`,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entries).toHaveLength(1);
+    expect(res.body.entries[0].industry_name).toBe("Finance");
+  });
+
+  test("GET /browse/experiences filters by work_term_type", async () => {
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "TransUnion Canada",
+      roleTitle: "Engineering Operations Co-op",
+      workTermType: "Co-op",
+      status: "Approved",
+    });
+
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.healthcare,
+      techId: refs.technologies.react,
+      companyName: "West Haldimand General Hospital",
+      roleTitle: "HR Assistant Intern",
+      workTermType: "Internship",
+      status: "Approved",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get(
+      "/browse/experiences?work_term_type=Internship",
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entries).toHaveLength(1);
+    expect(res.body.entries[0].work_term_type).toBe("Internship");
+  });
+
+  test("GET /browse/experiences filters by work_mode", async () => {
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "TransUnion Canada",
+      roleTitle: "Engineering Operations Co-op",
+      workMode: "Hybrid",
+      status: "Approved",
+    });
+
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.finance,
+      techId: refs.technologies.react,
+      companyName: "Foresters Financial",
+      roleTitle: "Security Administrator Co-op",
+      workMode: "Remote",
+      status: "Approved",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get("/browse/experiences?work_mode=Remote");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entries).toHaveLength(1);
+    expect(res.body.entries[0].work_mode).toBe("Remote");
+  });
+
+  test("GET /browse/experiences sorts by most recent submission date", async () => {
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "Older Company",
+      roleTitle: "Older Role",
+      status: "Approved",
+      submissionDate: "2026-01-01T10:00:00.000Z",
+    });
+
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.finance,
+      techId: refs.technologies.react,
+      companyName: "Newer Company",
+      roleTitle: "Newer Role",
+      status: "Approved",
+      submissionDate: "2026-02-01T10:00:00.000Z",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get("/browse/experiences?sort=recent");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entries).toHaveLength(2);
+    expect(res.body.entries[0].company_name).toBe("Newer Company");
+    expect(res.body.entries[1].company_name).toBe("Older Company");
+  });
+
+  test("GET /browse/experiences rejects invalid work mode", async () => {
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get("/browse/experiences?work_mode=Office");
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe(
+      "Work mode must be In-person, Hybrid, or Remote.",
+    );
+  });
+
+  test("GET /browse/experiences/:id returns approved entry detail", async () => {
+    const entryId = await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "TransUnion Canada",
+      roleTitle: "Engineering Operations Co-op",
+      status: "Approved",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get(`/browse/experiences/${entryId}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entry.entry_id).toBe(entryId);
+    expect(res.body.entry.company_name).toBe("TransUnion Canada");
+    expect(res.body.entry.technologies).toHaveLength(1);
+  });
+
+  test("GET /browse/experiences/:id does not return Pending entry", async () => {
+    const entryId = await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "TransUnion Canada",
+      roleTitle: "Engineering Operations Co-op",
+      status: "Pending",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get(`/browse/experiences/${entryId}`);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.error).toBe("Approved experience entry not found.");
   });
 });
