@@ -183,4 +183,61 @@ describe("Browse approved experience routes", () => {
     expect(res.body.entries[0].company_name).toBe("TransUnion Canada");
     expect(res.body.entries[0].moderation_status).toBe("Approved");
   });
+  test("GET /browse/experiences searches by company name", async () => {
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "TransUnion Canada",
+      roleTitle: "Engineering Operations Co-op",
+      status: "Approved",
+    });
+
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.finance,
+      techId: refs.technologies.react,
+      companyName: "Foresters Financial",
+      roleTitle: "Security Administrator Co-op",
+      status: "Approved",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get("/browse/experiences?search=transunion");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entries).toHaveLength(1);
+    expect(res.body.entries[0].company_name).toBe("TransUnion Canada");
+  });
+
+  test("GET /browse/experiences searches by role title", async () => {
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.technology,
+      techId: refs.technologies.sql,
+      companyName: "TransUnion Canada",
+      roleTitle: "Engineering Operations Co-op",
+      status: "Approved",
+    });
+
+    await createExperience({
+      authorId: studentId,
+      industryId: refs.industries.finance,
+      techId: refs.technologies.react,
+      companyName: "Foresters Financial",
+      roleTitle: "Security Administrator Co-op",
+      status: "Approved",
+    });
+
+    const agent = request.agent(app);
+    await login(agent);
+
+    const res = await agent.get("/browse/experiences?search=security");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.entries).toHaveLength(1);
+    expect(res.body.entries[0].role_title).toBe("Security Administrator Co-op");
+  });
 });
