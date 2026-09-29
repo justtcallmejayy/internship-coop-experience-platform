@@ -1,0 +1,142 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f6f7fb;
+  color: #172033;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: white;
+  border: 1px solid #d9deea;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 12px 30px rgba(23, 32, 51, 0.08);
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #3559c7;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+h1 {
+  margin: 0 0 12px;
+  line-height: 1.15;
+}
+
+.muted {
+  color: #5d6678;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+}
+
+input {
+  padding: 12px 14px;
+  border: 1px solid #b9c1d3;
+  border-radius: 10px;
+}
+
+input:focus {
+  outline: 3px solid #c7d4ff;
+  border-color: #3559c7;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: #2447b5;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: #eef2ff;
+  color: #2447b5;
+}
+
+.error-message {
+  margin: 0;
+  color: #b42318;
+  background: #fff1f0;
+  border: 1px solid #ffccc7;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.helper-text {
+  margin-top: 16px;
+  color: #5d6678;
+  font-size: 0.9rem;
+}
+
+.top-nav {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  background: white;
+  border-bottom: 1px solid #d9deea;
+}
+
+.page-shell {
+  padding: 32px;
+}
+
+.hero-card,
+.summary-card {
+  background: white;
+  border: 1px solid #d9deea;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.status-text {
+  padding: 32px;
+}

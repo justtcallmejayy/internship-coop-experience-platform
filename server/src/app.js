@@ -5,8 +5,17 @@ const profileRoutes = require("./routes/profile.routes");
 const experienceRoutes = require("./routes/experience.routes");
 const adminRoutes = require("./routes/admin.routes");
 const browseRoutes = require("./routes/browse.routes");
+const cors = require("cors");
 
 const app = express();
+
+// Configure CORS middleware to let the server know that this is a cross-origin request and to allow credentials (cookies) to be sent with requests. The origin is set to the client URL, which can be configured via environment variables.
+app.use(
+  cors({
+    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
