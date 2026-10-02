@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
-
+import ProfilePage from "./pages/ProfilePage";
 export default function App() {
   return (
     <Routes>
@@ -16,7 +16,16 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+        //login
+        
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
