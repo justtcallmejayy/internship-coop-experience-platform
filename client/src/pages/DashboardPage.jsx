@@ -35,7 +35,7 @@ export default function DashboardPage() {
       draft: countByStatus(entries, "Draft"),
       pending: countByStatus(entries, "Pending"),
       approved: countByStatus(entries, "Approved"),
-      rejected: countByStatus(entries, "Rejected"),
+      rejected: countByStatus(entries, "Rejected")
     };
   }, [entries]);
 

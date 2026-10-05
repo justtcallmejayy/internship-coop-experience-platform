@@ -140,3 +140,69 @@ button:disabled {
 .status-text {
   padding: 32px;
 }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-links a {
+  color: #2447b5;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.button-link {
+  display: inline-block;
+  background: #2447b5;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  border-bottom: 1px solid #d9deea;
+  padding: 12px;
+}
+
+.success-message {
+  margin: 0;
+  color: #067647;
+  background: #ecfdf3;
+  border: 1px solid #abefc6;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+@media (max-width: 700px) {
+  .top-nav,
+  .section-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+  }
+
+  .data-table {
+    font-size: 0.9rem;
+  }
+}
