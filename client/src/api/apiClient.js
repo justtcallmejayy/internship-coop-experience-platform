@@ -44,3 +44,22 @@ export const authApi = {
     return apiRequest("/auth/me");
   },
 };
+
+export const profileApi = {
+  getProfile() {
+    return apiRequest("/profile");
+  },
+
+  updateProfile(profileData) {
+    return apiRequest("/profile", {
+      method: "PATCH",
+      body: JSON.stringify(profileData),
+    });
+  },
+};
+
+export const experienceApi = {
+  getMyEntries() {
+    return apiRequest("/experiences/my");
+  },
+};
