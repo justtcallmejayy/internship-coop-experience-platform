@@ -58,8 +58,31 @@ export const profileApi = {
   },
 };
 
+export const referenceApi = {
+  getIndustries() {
+    return apiRequest("/reference/industries");
+  },
+
+  getTechnologies() {
+    return apiRequest("/reference/technologies");
+  },
+};
+
 export const experienceApi = {
   getMyEntries() {
     return apiRequest("/experiences/my");
+  },
+
+  createEntry(entryData) {
+    return apiRequest("/experiences", {
+      method: "POST",
+      body: JSON.stringify(entryData),
+    });
+  },
+
+  submitEntry(entryId) {
+    return apiRequest(`/experiences/${entryId}/submit`, {
+      method: "POST",
+    });
   },
 };
