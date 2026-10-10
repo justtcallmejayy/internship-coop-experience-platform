@@ -42,6 +42,7 @@ app.use("/profile", profileRoutes); // Mount the profile routes at /profile
 app.use("/experiences", experienceRoutes); // Mount the experience routes at /experiences
 app.use("/admin", adminRoutes); // Mount the admin routes at /admin
 app.use("/browse", browseRoutes); // Mount the browse routes at /browse
+app.use("/reference", referenceRoutes); // Mount the reference routes at /reference
 
 app.use((req, res) => {
   res.status(404).json({
