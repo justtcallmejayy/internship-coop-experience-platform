@@ -5,6 +5,7 @@ const profileRoutes = require("./routes/profile.routes");
 const experienceRoutes = require("./routes/experience.routes");
 const adminRoutes = require("./routes/admin.routes");
 const browseRoutes = require("./routes/browse.routes");
+const referenceRoutes = require("./routes/reference.routes");
 const cors = require("cors");
 
 const app = express();
