@@ -27,6 +27,13 @@ export async function apiRequest(path, options = {}) {
 }
 
 export const authApi = {
+  register(account) {
+    return apiRequest("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(account),
+    });
+  },
+
   login(credentials) {
     return apiRequest("/auth/login", {
       method: "POST",
