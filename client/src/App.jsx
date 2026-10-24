@@ -3,10 +3,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePages";
+import RegisterPage from "./pages/RegisterPage";
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
       <Route
         path="/"

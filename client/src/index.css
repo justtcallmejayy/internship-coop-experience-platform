@@ -108,6 +108,16 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+.auth-switch {
+  margin-bottom: 0;
+  color: #5d6678;
+}
+
+.auth-switch a {
+  color: #2447b5;
+  font-weight: 700;
+}
+
 .top-nav {
   min-height: 64px;
   display: flex;
