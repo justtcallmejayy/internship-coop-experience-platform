@@ -12,9 +12,22 @@ const connectPgSimple = require("connect-pg-simple")(session);
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
 const sessionSecret = process.env.SESSION_SECRET || "dev-secret-change-later";
+const secureCookie =
+  process.env.COOKIE_SECURE !== undefined
+    ? process.env.COOKIE_SECURE === "true"
+    : isProduction;
+const sameSite = process.env.COOKIE_SAME_SITE || "lax";
 
 if (isProduction && sessionSecret === "dev-secret-change-later") {
   throw new Error("SESSION_SECRET must be configured in production.");
+}
+
+if (sameSite === "none" && !secureCookie) {
+  throw new Error("COOKIE_SECURE must be true when COOKIE_SAME_SITE is none.");
+}
+
+if (isProduction) {
+  app.set("trust proxy", 1);
 }
 
 // Configure CORS middleware to let the server know that this is a cross-origin request and to allow credentials (cookies) to be sent with requests. The origin is set to the client URL, which can be configured via environment variables.
@@ -41,8 +54,8 @@ app.use(
       : undefined,
     cookie: {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: "lax",
+      secure: secureCookie,
+      sameSite,
       maxAge: 1000 * 60 * 60,
     },
   }),

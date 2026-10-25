@@ -8,11 +8,16 @@ import BrowsePage from "./pages/BrowsePage";
 import BrowseDetailPage from "./pages/BrowseDetailPage";
 import ExperienceDetailPage from "./pages/ExperienceDetailPage";
 import ExperienceEditorPage from "./pages/ExperienceEditorPage";
+import AdminRoute from "./components/AdminRoute";
+import AccessDeniedPage from "./pages/AccessDeniedPage";
+import AdminModerationPage from "./pages/AdminModerationPage";
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/access-denied" element={<AccessDeniedPage />} />
+      <Route path="/admin/moderation" element={<AdminRoute><AdminModerationPage /></AdminRoute>} />
       <Route path="/browse" element={<ProtectedRoute><BrowsePage /></ProtectedRoute>} />
       <Route path="/browse/:entryId" element={<ProtectedRoute><BrowseDetailPage /></ProtectedRoute>} />
       <Route path="/experiences/new" element={<ProtectedRoute><ExperienceEditorPage /></ProtectedRoute>} />

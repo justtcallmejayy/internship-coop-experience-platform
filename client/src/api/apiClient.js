@@ -125,3 +125,21 @@ export const browseApi = {
     return apiRequest(`/browse/experiences/${entryId}`);
   },
 };
+
+export const adminApi = {
+  getPendingEntries() {
+    return apiRequest("/admin/experiences/pending");
+  },
+
+  approveEntry(entryId) {
+    return apiRequest(`/admin/experiences/${entryId}/approve`, {
+      method: "PATCH",
+    });
+  },
+
+  rejectEntry(entryId) {
+    return apiRequest(`/admin/experiences/${entryId}/reject`, {
+      method: "PATCH",
+    });
+  },
+};

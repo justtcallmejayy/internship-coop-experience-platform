@@ -58,14 +58,22 @@ router.post("/register", async (req, res) => {
 
     const password_hash = await hashPassword(password);
 
-    const insertedIds = await db("users").insert({
-      full_name: full_name.trim(),
-      email: cleanEmail,
-      password_hash,
-      role: "Student",
-    });
+    const insertedUsers = await db("users")
+      .insert({
+        full_name: full_name.trim(),
+        email: cleanEmail,
+        password_hash,
+        role: "Student",
+      })
+      .returning("user_id");
 
-    const user = await db("users").where({ user_id: insertedIds[0] }).first();
+    const insertedUserId =
+      typeof insertedUsers[0] === "object"
+        ? insertedUsers[0].user_id
+        : insertedUsers[0];
+    const user = await db("users")
+      .where({ user_id: insertedUserId })
+      .first();
 
     req.session.user = publicUser(user);
 

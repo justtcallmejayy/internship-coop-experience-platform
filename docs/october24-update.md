@@ -40,11 +40,16 @@ I will not deploy my app using a poor database choice such as SQLite. The databa
 - Production sessions use PostgreSQL-backed session storage.
 - Production requires `DATABASE_URL` and a non-default `SESSION_SECRET`.
 - Production cookies use HTTPS-only secure cookies.
+- Cookie security and SameSite behavior can be configured with `COOKIE_SECURE`
+  and `COOKIE_SAME_SITE` for local cross-origin testing.
 - `server/.env.example` documents the required deployment variables.
 - Supabase production database connection verified on October 25.
 - Production migrations were already up to date.
 - Reference seed completed: 8 industries and 11 technologies.
 - Production app smoke test passed: `/health` returned 200 and unauthenticated `/auth/me` returned 401.
+- Admin moderation frontend completed on October 25.
+- Added role-based admin routing, pending-entry queue, entry review detail, approve/reject actions, and a 403 access-denied page.
+- Local Supabase testing supports HTTP cookies with `COOKIE_SECURE=false`; deployed HTTPS environments enable secure cookies automatically.
 
 ## Deployment order
 

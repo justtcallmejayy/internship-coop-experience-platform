@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { useAuth } from "../auth/AuthContext";
 
 export default function AppNav() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -17,6 +17,7 @@ export default function AppNav() {
         <Link to="/">Dashboard</Link>
         <Link to="/browse">Browse</Link>
         <Link to="/profile">Profile</Link>
+        {user?.role === "Admin" && <Link to="/admin/moderation">Moderation</Link>}
         <button type="button" className="secondary-button" onClick={handleLogout}>
           Log Out
         </button>
