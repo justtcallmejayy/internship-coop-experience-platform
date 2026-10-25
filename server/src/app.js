@@ -7,8 +7,15 @@ const adminRoutes = require("./routes/admin.routes");
 const browseRoutes = require("./routes/browse.routes");
 const referenceRoutes = require("./routes/reference.routes");
 const cors = require("cors");
+const connectPgSimple = require("connect-pg-simple")(session);
 
 const app = express();
+const isProduction = process.env.NODE_ENV === "production";
+const sessionSecret = process.env.SESSION_SECRET || "dev-secret-change-later";
+
+if (isProduction && sessionSecret === "dev-secret-change-later") {
+  throw new Error("SESSION_SECRET must be configured in production.");
+}
 
 // Configure CORS middleware to let the server know that this is a cross-origin request and to allow credentials (cookies) to be sent with requests. The origin is set to the client URL, which can be configured via environment variables.
 app.use(
@@ -23,12 +30,18 @@ app.use(express.json());
 // Configure session middleware (session setup)
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "dev-secret-change-later", // In production, use a session secure secret from environment variables.
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
+    store: isProduction
+      ? new connectPgSimple({
+          conString: process.env.DATABASE_URL,
+          createTableIfMissing: true,
+        })
+      : undefined,
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: isProduction,
       sameSite: "lax",
       maxAge: 1000 * 60 * 60,
     },
