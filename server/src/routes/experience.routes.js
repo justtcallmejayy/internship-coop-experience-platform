@@ -311,14 +311,19 @@ router.post("/", requireAuth, async (req, res) => {
     }
     /* Create a new experience entry */
     const entryId = await db.transaction(async (trx) => {
-      const insertedIds = await trx("experience_entries").insert({
-        ...data,
-        author_id: req.session.user.user_id,
-        moderation_status: "Draft",
-        last_updated_date: new Date().toISOString(),
-      });
+      const insertedEntries = await trx("experience_entries")
+        .insert({
+          ...data,
+          author_id: req.session.user.user_id,
+          moderation_status: "Draft",
+          last_updated_date: new Date().toISOString(),
+        })
+        .returning("entry_id");
 
-      const newEntryId = insertedIds[0];
+      const newEntryId =
+        typeof insertedEntries[0] === "object"
+          ? insertedEntries[0].entry_id
+          : insertedEntries[0];
 
       const technologyRows = technology_ids.map((tech_id) => ({
         entry_id: newEntryId,

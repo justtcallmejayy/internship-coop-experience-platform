@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "migrate:latest": "knex migrate:latest",
+    "migrate:rollback": "knex migrate:rollback",
     "test": "NODE_ENV=test jest --runInBand",
     "seed": "knex seed:run"
   },
@@ -19,10 +21,12 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
+    "connect-pg-simple": "^10.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "knex": "^3.2.10",
+    "pg": "^8.16.3",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {

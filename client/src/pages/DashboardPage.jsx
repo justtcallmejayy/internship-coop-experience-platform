@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
+import AppNav from "../components/AppNav";
 import { experienceApi } from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
 
@@ -8,7 +9,7 @@ function countByStatus(entries, status) {
 }
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [entries, setEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
@@ -41,17 +42,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <header className="top-nav">
-        <strong>Co-op Experiences</strong>
-
-        <nav className="nav-links">
-          <Link to="/">Dashboard</Link>
-          <Link to="/profile">Profile</Link>
-          <button type="button" className="secondary-button" onClick={logout}>
-            Log Out
-          </button>
-        </nav>
-      </header>
+      <AppNav />
 
       <main className="page-shell">
         <section className="hero-card">
@@ -117,7 +108,7 @@ export default function DashboardPage() {
               <tbody>
                 {entries.map((entry) => (
                   <tr key={entry.entry_id}>
-                    <td>{entry.company_name}</td>
+                    <td><Link to={`/experiences/${entry.entry_id}`}>{entry.company_name}</Link></td>
                     <td>{entry.role_title}</td>
                     <td>{entry.moderation_status}</td>
                     <td>

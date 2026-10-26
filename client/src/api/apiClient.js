@@ -27,6 +27,13 @@ export async function apiRequest(path, options = {}) {
 }
 
 export const authApi = {
+  register(account) {
+    return apiRequest("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(account),
+    });
+  },
+
   login(credentials) {
     return apiRequest("/auth/login", {
       method: "POST",
@@ -80,9 +87,59 @@ export const experienceApi = {
     });
   },
 
+  getEntry(entryId) {
+    return apiRequest(`/experiences/${entryId}`);
+  },
+
+  updateEntry(entryId, entryData) {
+    return apiRequest(`/experiences/${entryId}`, {
+      method: "PATCH",
+      body: JSON.stringify(entryData),
+    });
+  },
+
+  deleteEntry(entryId) {
+    return apiRequest(`/experiences/${entryId}`, {
+      method: "DELETE",
+    });
+  },
+
   submitEntry(entryId) {
     return apiRequest(`/experiences/${entryId}/submit`, {
       method: "POST",
+    });
+  },
+};
+
+export const browseApi = {
+  getEntries(filters = {}) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+    const query = params.toString();
+    return apiRequest(`/browse/experiences${query ? `?${query}` : ""}`);
+  },
+
+  getEntry(entryId) {
+    return apiRequest(`/browse/experiences/${entryId}`);
+  },
+};
+
+export const adminApi = {
+  getPendingEntries() {
+    return apiRequest("/admin/experiences/pending");
+  },
+
+  approveEntry(entryId) {
+    return apiRequest(`/admin/experiences/${entryId}/approve`, {
+      method: "PATCH",
+    });
+  },
+
+  rejectEntry(entryId) {
+    return apiRequest(`/admin/experiences/${entryId}/reject`, {
+      method: "PATCH",
     });
   },
 };

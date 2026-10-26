@@ -30,6 +30,12 @@ export function AuthProvider({ children }) {
     return data.user;
   }
 
+  async function register({ full_name, email, password }) {
+    const data = await authApi.register({ full_name, email, password });
+    setUser(data.user);
+    return data.user;
+  }
+
   async function logout() {
     await authApi.logout();
     setUser(null);
@@ -41,6 +47,7 @@ export function AuthProvider({ children }) {
         user,
         authLoading,
         login,
+        register,
         logout,
         isAuthenticated: Boolean(user),
       }}

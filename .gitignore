@@ -25,6 +25,8 @@ build/
 out/
 .next/
 .vite/
+playwright-report/
+test-results/
 
 # =========================
 # Databases / local data

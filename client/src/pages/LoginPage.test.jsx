@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import LoginPage from "./LoginPage";
+import { MemoryRouter } from "react-router";
 
 const mockLogin = vi.fn();
 const mockNavigate = vi.fn();
@@ -22,13 +23,21 @@ vi.mock("react-router", async () => {
 });
 
 describe("LoginPage", () => {
+  function renderLoginPage() {
+    return render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
+  }
+
   beforeEach(() => {
     mockLogin.mockReset();
     mockNavigate.mockReset();
   });
 
   test("renders login form", () => {
-    render(<LoginPage />);
+    renderLoginPage();
 
     expect(
       screen.getByRole("heading", {
@@ -50,7 +59,7 @@ describe("LoginPage", () => {
       role: "Student",
     });
 
-    render(<LoginPage />);
+    renderLoginPage();
 
     await user.type(screen.getByLabelText(/email/i), "student1@test.com");
     await user.type(screen.getByLabelText(/password/i), "P@ssw0rd123");
@@ -70,7 +79,7 @@ describe("LoginPage", () => {
       new Error("Email or password is incorrect."),
     );
 
-    render(<LoginPage />);
+    renderLoginPage();
 
     await user.type(screen.getByLabelText(/email/i), "student1@test.com");
     await user.type(screen.getByLabelText(/password/i), "WrongPass1@");

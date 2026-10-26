@@ -86,3 +86,29 @@ npm test
 ## Manual Testing Used
 
 Manual curl/Postman-style testing was used for quick verification and demonstration only. Automated Jest/Supertest tests are the main testing evidence.
+
+## Browser End-to-End Testing
+
+Playwright is configured in `client/playwright.config.js` and can be run with:
+
+```bash
+cd client
+npm run test:e2e
+```
+
+The initial browser suite covers:
+
+- Successful student registration
+- Successful student login
+- Session persistence after a browser refresh
+- Inline invalid-login errors
+- Redirecting logged-out users from protected pages
+- Redirecting student users from the admin page to the access-denied page
+- Creating an experience draft
+- Submitting an experience for review
+- Admin approval of a pending experience
+
+These scenarios cover the proposal's UI-001 through UI-004 cases.
+
+The next browser coverage should exercise editing and deleting entries,
+browsing/search/filtering approved entries, and admin rejection.

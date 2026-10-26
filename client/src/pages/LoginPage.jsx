@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { Link } from "react-router";
 import { useAuth } from "../auth/AuthContext";
 
 export default function LoginPage() {
@@ -72,12 +73,20 @@ export default function LoginPage() {
             />
           </label>
 
-          {error && <p className="error-message">{error}</p>}
+          {error && (
+            <p className="error-message" role="alert">
+              {error}
+            </p>
+          )}
 
           <button type="submit" disabled={submitting}>
             {submitting ? "Logging in..." : "Log In"}
           </button>
         </form>
+
+        <p className="auth-switch">
+          Need an account? <Link to="/register">Register here</Link>
+        </p>
 
         <p className="helper-text">
           Passwords must include uppercase, lowercase, number, and special
