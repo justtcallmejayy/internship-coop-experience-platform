@@ -20,7 +20,12 @@ export default function ExperienceEditorPage() {
       .finally(() => setLoading(false));
   }, [entryId]);
 
-  async function handleSubmit(payload) {
+  async function handleSubmit(payload, validationError) {
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setSubmitting(true);
     setError("");
     try {

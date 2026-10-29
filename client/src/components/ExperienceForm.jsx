@@ -73,8 +73,68 @@ export default function ExperienceForm({ entry, onSubmit, submitting, error }) {
     }));
   }
 
+  function validateForm() {
+    const errors = [];
+
+    if (!form.company_name.trim()) errors.push("Company name is required.");
+    if (!form.role_title.trim()) errors.push("Role title is required.");
+    if (!form.industry_id) errors.push("Industry is required.");
+    if (!form.location_city.trim()) errors.push("City is required.");
+    if (!form.location_province.trim()) errors.push("Province is required.");
+    if (!form.start_month) errors.push("Start month is required.");
+    if (!form.start_year) errors.push("Start year is required.");
+    if (!form.end_month) errors.push("End month is required.");
+    if (!form.end_year) errors.push("End year is required.");
+    if (!form.learning_outcomes.trim()) {
+      errors.push("Learning outcomes are required.");
+    }
+
+    const startMonth = Number(form.start_month);
+    const endMonth = Number(form.end_month);
+    const startYear = Number(form.start_year);
+    const endYear = Number(form.end_year);
+
+    if (form.start_month && (startMonth < 1 || startMonth > 12)) {
+      errors.push("Start month must be between 1 and 12.");
+    }
+    if (form.end_month && (endMonth < 1 || endMonth > 12)) {
+      errors.push("End month must be between 1 and 12.");
+    }
+    if (form.start_year && (startYear < 2000 || startYear > 2100)) {
+      errors.push("Start year must be between 2000 and 2100.");
+    }
+    if (form.end_year && (endYear < 2000 || endYear > 2100)) {
+      errors.push("End year must be between 2000 and 2100.");
+    }
+    if (
+      startYear >= 2000 &&
+      startYear <= 2100 &&
+      endYear >= 2000 &&
+      endYear <= 2100 &&
+      startMonth >= 1 &&
+      startMonth <= 12 &&
+      endMonth >= 1 &&
+      endMonth <= 12 &&
+      endYear * 100 + endMonth < startYear * 100 + startMonth
+    ) {
+      errors.push("End date cannot be before start date.");
+    }
+    if (form.technology_ids.length === 0) {
+      errors.push("At least one technology must be selected.");
+    }
+
+    return errors;
+  }
+
   function handleSubmit(event) {
     event.preventDefault();
+    const validationErrors = validateForm();
+
+    if (validationErrors.length > 0) {
+      onSubmit(null, validationErrors.join(" "));
+      return;
+    }
+
     onSubmit({
       ...form,
       industry_id: Number(form.industry_id),
@@ -88,7 +148,7 @@ export default function ExperienceForm({ entry, onSubmit, submitting, error }) {
   }
 
   return (
-    <form className="form experience-form" onSubmit={handleSubmit}>
+    <form className="form experience-form" onSubmit={handleSubmit} noValidate>
       {referenceError && <p className="error-message" role="alert">{referenceError}</p>}
       {error && <p className="error-message" role="alert">{error}</p>}
 
