@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { profileApi } from "../api/apiClient";
+import AppNav from "../components/AppNav";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState({
@@ -84,17 +85,19 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="page-shell">
-      <section className="hero-card">
-        <p className="eyebrow">User Profile</p>
-        <h1>My Profile</h1>
-        <p className="muted">
-          View and update your student profile information.
-        </p>
-      </section>
+    <>
+      <AppNav />
+      <main className="page-shell">
+        <section className="hero-card">
+          <p className="eyebrow">User Profile</p>
+          <h1>My Profile</h1>
+          <p className="muted">
+            View and update your student profile information.
+          </p>
+        </section>
 
-      <section className="summary-card">
-        <form className="form" onSubmit={handleSubmit}>
+        <section className="summary-card detail-card">
+          <form className="form" onSubmit={handleSubmit}>
           <label>
             Full Name
             <input
@@ -149,9 +152,10 @@ export default function ProfilePage() {
           {message && <p className="success-message">{message}</p>}
           {error && <p className="error-message">{error}</p>}
 
-          <button type="submit">Save Profile</button>
-        </form>
-      </section>
-    </main>
+            <button type="submit">Save Profile</button>
+          </form>
+        </section>
+      </main>
+    </>
   );
 }

@@ -8,6 +8,14 @@ function countByStatus(entries, status) {
   return entries.filter((entry) => entry.moderation_status === status).length;
 }
 
+function StatusBadge({ status }) {
+  return (
+    <span className={`status-badge status-${status.toLowerCase()}`}>
+      {status}
+    </span>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
 
@@ -96,7 +104,8 @@ export default function DashboardPage() {
           )}
 
           {!loadingEntries && entries.length > 0 && (
-            <table className="data-table">
+            <div className="data-table-wrap">
+              <table className="data-table">
               <thead>
                 <tr>
                   <th>Company</th>
@@ -110,7 +119,7 @@ export default function DashboardPage() {
                   <tr key={entry.entry_id}>
                     <td><Link to={`/experiences/${entry.entry_id}`}>{entry.company_name}</Link></td>
                     <td>{entry.role_title}</td>
-                    <td>{entry.moderation_status}</td>
+                    <td><StatusBadge status={entry.moderation_status} /></td>
                     <td>
                       {entry.last_updated_date
                         ? new Date(entry.last_updated_date).toLocaleDateString()
@@ -119,7 +128,8 @@ export default function DashboardPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           )}
         </section>
       </main>

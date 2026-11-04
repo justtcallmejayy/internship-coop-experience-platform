@@ -29,16 +29,23 @@ export default function BrowsePage() {
     setFilters((current) => ({ ...current, [name]: value }));
   }
 
+  function clearFilters() {
+    setFilters({ search: "", industry_id: "", work_term_type: "", work_mode: "" });
+  }
+
   return (
     <>
       <AppNav />
       <main className="page-shell">
         <section className="hero-card"><p className="eyebrow">Explore experiences</p><h1>Browse approved experiences</h1><p className="muted">Learn from internship and co-op experiences shared by students.</p></section>
-        <section className="summary-card filter-bar">
+        <section className="summary-card filter-bar" aria-label="Filter experiences">
           <label>Search<input name="search" value={filters.search} onChange={updateFilter} placeholder="Company or role" /></label>
           <label>Industry<select name="industry_id" value={filters.industry_id} onChange={updateFilter}><option value="">All industries</option>{industries.map((industry) => <option key={industry.industry_id} value={industry.industry_id}>{industry.industry_name}</option>)}</select></label>
           <label>Term type<select name="work_term_type" value={filters.work_term_type} onChange={updateFilter}><option value="">All terms</option><option>Internship</option><option>Co-op</option></select></label>
           <label>Work mode<select name="work_mode" value={filters.work_mode} onChange={updateFilter}><option value="">All modes</option><option>In-person</option><option>Hybrid</option><option>Remote</option></select></label>
+          {(filters.search || filters.industry_id || filters.work_term_type || filters.work_mode) && (
+            <button type="button" className="secondary-button" onClick={clearFilters}>Clear filters</button>
+          )}
         </section>
         {error && <p className="error-message" role="alert">{error}</p>}
         {loading && <p className="status-text">Loading experiences...</p>}
