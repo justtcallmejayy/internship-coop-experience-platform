@@ -16,7 +16,7 @@ const secureCookie =
   process.env.COOKIE_SECURE !== undefined
     ? process.env.COOKIE_SECURE === "true"
     : isProduction;
-const sameSite = process.env.COOKIE_SAME_SITE || "lax";
+const sameSite = process.env.COOKIE_SAME_SITE || (isProduction ? "none" : "lax");
 
 if (isProduction && sessionSecret === "dev-secret-change-later") {
   throw new Error("SESSION_SECRET must be configured in production.");
@@ -74,6 +74,16 @@ app.use("/reference", referenceRoutes); // Mount the reference routes at /refere
 app.use((req, res) => {
   res.status(404).json({
     error: "Route not found.",
+  });
+});
+
+app.use((error, req, res, next) => {
+  console.error("Unhandled application error:", error);
+  res.status(500).json({
+    error:
+      isProduction
+        ? "Internal server error."
+        : error.message || "Internal server error.",
   });
 });
 
